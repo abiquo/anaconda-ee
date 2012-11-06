@@ -16,10 +16,20 @@ def abiquo_upgrade_post(anaconda):
     # Clean tomcat 
     if os.path.exists(work_path):
         log.info("ABIQUO: Cleaning work folder...")
-        shutil.rmtree(work_path)
+        for f in os.listdir(work_path):
+            fpath = os.path.join(work_path,f)
+            try:
+                os.unlink(fpath)
+            except Exception, e:
+                print e
     if os.path.exists(temp_path):
         log.info("ABIQUO: Cleaning temp folder...")
-        shutil.rmtree(temp_path)
+        for f in os.listdir(temp_path):
+            fpath = os.path.join(temp_path,f)
+            try:
+                os.unlink(fpath)
+            except Exception, e:
+                print e
     # Upgrade database if this is a server install
     if os.path.exists(schema_path):
         schema = open(schema_path)
