@@ -8,7 +8,7 @@ log = logging.getLogger("anaconda")
 
 def abiquo_upgrade_post(anaconda):
 
-    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-latest-delta.sql"
+    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-2.3.0-delta.sql"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     lvm_path = anaconda.rootPath + "/opt/abiquo/lvmiscsi"
@@ -19,7 +19,10 @@ def abiquo_upgrade_post(anaconda):
         for f in os.listdir(work_path):
             fpath = os.path.join(work_path,f)
             try:
-                os.unlink(fpath)
+                if os.path.isfile(fpath):
+                    os.unlink(fpath)
+                else:
+                    shutil.rmtree(fpath)
             except Exception, e:
                 print e
     if os.path.exists(temp_path):
@@ -27,7 +30,10 @@ def abiquo_upgrade_post(anaconda):
         for f in os.listdir(temp_path):
             fpath = os.path.join(temp_path,f)
             try:
-                os.unlink(fpath)
+                if os.path.isfile(fpath):
+                    os.unlink(fpath)
+                else:
+                    shutil.rmtree(fpath)
             except Exception, e:
                 print e
     # Upgrade database if this is a server install
