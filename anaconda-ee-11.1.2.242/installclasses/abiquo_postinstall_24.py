@@ -209,6 +209,11 @@ exit 0
                                         ['mysql', "on"],
                                         stdout="/dev/tty5", stderr="/dev/tty5",
                                         root=anaconda.rootPath)
+                # Create root user for MariaDB
+                iutil.execWithRedirect("/usr/bin/mysql",
+                                        ['-e','grant all on *.* to \'root\'@\'%\' identified by \'\' with grant option;'],
+                                        stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                        root=anaconda.rootPath)
 
                 schema = open(anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-schema.sql")
 		# replace default password
