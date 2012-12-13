@@ -8,14 +8,14 @@ import sys
 import os.path
 
 def abiquo_upgrade_pre(anaconda):
-    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.2.0' 
+    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.3.0' 
     if os.path.exists(backup_dir):
         anaconda.intf.messageWindow("Upgrade not possible",
                                     "Previous upgrade directory found. Aborting.")
 	sys.exit(0)
 
     win = anaconda.intf.progressWindow("Upgrading",
-                              "Previous installation detected, upgrading to 2.3.0...", 
+                              "Previous installation detected, upgrading to 2.4.0...", 
                               5)
     abiquo_config_dir = anaconda.rootPath + '/opt/abiquo/config'
     db_dir = anaconda.rootPath + '/var/lib/mysql/kinton'
@@ -24,7 +24,6 @@ def abiquo_upgrade_pre(anaconda):
     sysconfig_dir = anaconda.rootPath + "/etc/sysconfig"
     redis_db_file = anaconda.rootPath + '/var/lib/redis/dump.rdb'
     redis_backup_dir = backup_dir + "/redis"
-    # abiquo_ontap_dir = anaconda.rootPath + '/opt/abiquo/ontap'
 
     # create backup dir
     os.makedirs(backup_dir)
