@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.242
-Release: 208.1.abiquo
+Release: 209.1.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Mon Dec 10 2012 Abel Boldú <abel.boldu@abiquo.com> - 11.1.2.242-209.1.abiquo
+- Moving to 2.4.0
+
 * Thu Oct 18 2012 Abel Boldú <abel.boldu@abiquo.com> - 11.1.2.242-208.1.abiquo
 - work and temp folders fix
 

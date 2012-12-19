@@ -36,11 +36,11 @@ def abiquo_upgrade_post(anaconda):
             except Exception, e:
                 print e
 
-     # MariaDB compatibility
-     if not os.path.exists(anaconda.rootPath + "/etc/init.d/mysqld") and \
-         os.path.exists(anaconda.rootPath + "/etc/init.d/mysql"):
-             log.info("ABIQUO: Creating mysql symlink...")
-             os.symlink("/etc/init.d/mysql", "/etc/init.d/mysqld")
+    # MariaDB compatibility
+    if not os.path.exists(anaconda.rootPath + "/etc/init.d/mysqld") and \
+        os.path.exists(anaconda.rootPath + "/etc/init.d/mysql"):
+            log.info("ABIQUO: Creating mysql symlink...")
+            os.symlink("/etc/init.d/mysql", "/etc/init.d/mysqld")
 
     # Upgrade database if this is a server install
     if os.path.exists(schema_path):
