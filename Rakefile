@@ -6,9 +6,6 @@ task :updateimg do
   Dir['anaconda-ee-11.1.2.242/*.py'].each do |f|
     FileUtils.cp f, '/mnt/'
   end
-  Dir['anaconda-ee-11.1.2.242/*.py'].each do |f|
-    FileUtils.cp f, '/mnt/'
-  end
   Dir['anaconda-ee-11.1.2.242/ui/*'].each do |f|
     FileUtils.cp f, '/mnt/'
   end

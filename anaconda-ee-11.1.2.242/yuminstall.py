@@ -522,7 +522,8 @@ class AnacondaYum(YumSorter):
         self.conf.installroot = root
         self.conf.reposdir="/tmp/repos.d"
         self.conf.logfile="/tmp/yum.log"
-        self.conf.obsoletes=True
+        # self.conf.obsoletes=True
+        self.conf.obsoletes=False
         self.conf.exclude=[]
         self.conf.cache=0
         self.conf.cachedir = '/tmp/cache/'
@@ -1282,6 +1283,7 @@ class YumBackend(AnacondaBackend):
                 if pkgname is None:
                     continue
                 self.ayum.remove(name=pkgname, arch=pkgarch)
+                log.info("Removing %s arch  %s" % (pkgname, pkgarch))
             self.ayum.update()
 
         try:

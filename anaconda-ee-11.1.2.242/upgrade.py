@@ -41,7 +41,7 @@ log = logging.getLogger("anaconda")
 
 # blacklist made up of (name, arch) or 
 # (name, ) to erase all matches
-upgrade_remove_blacklist = [("system-config-mouse",), ("dev",)] 
+upgrade_remove_blacklist = [("system-config-mouse",), ("dev",)]
 
 if rhpl.getArch() == "ia64":
     upgrade_remove_blacklist.extend( [("cracklib-dicts", "i386"),
@@ -60,7 +60,7 @@ if rhpl.getArch() == "x86_64":
                                       ("openjade", "i386"),
                                       ("elfutils", "i386"),
                                       ("tclx", "i386"),
-                                      ("dmraid", "i386")
+                                      ("dmraid", "i386"),
                                      ])
 
 if rhpl.getArch() == "ppc":
