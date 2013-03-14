@@ -4,6 +4,7 @@ import shutil
 import logging
 import ConfigParser
 import time
+from subprocess import *
 
 log = logging.getLogger("anaconda")
 
@@ -13,6 +14,10 @@ def abiquo_upgrade_post(anaconda):
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
+
+    redis_port = 6379
+    redis_sport = str(redis_port)
+
     log.info("ABIQUO: Post install steps")
     # Clean tomcat 
     if os.path.exists(work_path):
@@ -48,24 +53,50 @@ def abiquo_upgrade_post(anaconda):
                                 root=anaconda.rootPath)
         iutil.execWithRedirect("/etc/init.d/mysql",
                                 ['start'],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
-        # Wait for startup
-        time.sleep(8)
-        #MariaDB proc fix
-        iutil.execWithRedirect("/usr/bin/mysql",
-                                ['-e','"use mysql; repair table proc;"'],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
-                                root=anaconda.rootPath)
-
-        time.sleep(5)
+        time.sleep(1)
         schema = open(schema_path)
         iutil.execWithRedirect("/usr/bin/mysql",
                                 ['kinton'],
                                 stdin=schema,
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         schema.close()
+
+
+    # Redis ABICLOUDPREMIUM-5188
+
+    if os.path.exists(schema_path):
+        log.info("ABIQUO: Applying redis patch...")
+        iutil.execWithRedirect("/etc/init.d/redis",
+                                ['start'],
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath)
+        iutil.execWithRedirect("/usr/bin/redis-cli",
+                                ['-h', 'localhost', '-p', redis_sport ,"PING"],
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath) 
+
+        cmd = iutil.execWithRedirect("/usr/bin/redis-cli",
+                                ['-h', 'localhost', '-p', redis_sport ,'keys','Task:*'],
+                                stdout="/mnt/sysimage/tmp/redis_tasks", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath)
+        for task in open('/mnt/sysimage/tmp/redis_tasks','r').readlines() :
+            task = task.strip()
+            tasktype = Popen(["redis-cli", "--raw", "-h", "localhost", "-p", redis_sport, "hget", task, "type"], stdout=PIPE).communicate()[0].strip()
+            if 'SNAPSHOT' == tasktype:
+                iutil.execWithRedirect("/usr/bin/redis-cli",
+                                    ["-h", "localhost", "-p", redis_sport ,"hset",task,"type","INSTANCE"],
+                                    stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                    root=anaconda.rootPath)
+                log.info("ABIQUO: Task "+task+" updated.")
+
+
+
+
+
+
 
     # restore fstab
     backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.3.0'
