@@ -55,7 +55,7 @@ def abiquo_upgrade_post(anaconda):
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
-        time.sleep(1)
+        time.sleep(6)
         schema = open(schema_path)
         iutil.execWithRedirect("/usr/bin/mysql",
                                 ['kinton'],
