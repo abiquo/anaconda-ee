@@ -71,20 +71,21 @@ def abiquo_upgrade_post(anaconda):
         log.info("ABIQUO: Applying redis patch...")
         iutil.execWithRedirect("/etc/init.d/redis",
                                 ['start'],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
+        time.sleep(3)
         iutil.execWithRedirect("/usr/bin/redis-cli",
                                 ['-h', 'localhost', '-p', redis_sport ,"PING"],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath) 
 
         cmd = iutil.execWithRedirect("/usr/bin/redis-cli",
                                 ['-h', 'localhost', '-p', redis_sport ,'keys','Task:*'],
-                                stdout="/mnt/sysimage/tmp/redis_tasks", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/tmp/redis_tasks", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         for task in open('/mnt/sysimage/tmp/redis_tasks','r').readlines() :
             task = task.strip()
-            tasktype = Popen(["redis-cli", "--raw", "-h", "localhost", "-p", redis_sport, "hget", task, "type"], stdout=PIPE).communicate()[0].strip()
+            tasktype = Popen(["redis-cli", "-h", "localhost", "-p", redis_sport, "hget", task, "type"], stdout=PIPE).communicate()[0].strip()
             if 'SNAPSHOT' == tasktype:
                 iutil.execWithRedirect("/usr/bin/redis-cli",
                                     ["-h", "localhost", "-p", redis_sport ,"hset",task,"type","INSTANCE"],
