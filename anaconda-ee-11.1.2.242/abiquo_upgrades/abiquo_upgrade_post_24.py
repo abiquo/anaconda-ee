@@ -73,12 +73,13 @@ def abiquo_upgrade_post(anaconda):
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
+        # Wait for start
         time.sleep(3)
         iutil.execWithRedirect("/usr/bin/redis-cli",
                                 ['-h', 'localhost', '-p', redis_sport ,"PING"],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath) 
-
+        # Update tasks
         cmd = iutil.execWithRedirect("/usr/bin/redis-cli",
                                 ['-h', 'localhost', '-p', redis_sport ,'keys','Task:*'],
                                 stdout="/mnt/sysimage/tmp/redis_tasks", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
@@ -93,6 +94,20 @@ def abiquo_upgrade_post(anaconda):
                                     root=anaconda.rootPath)
                 log.info("ABIQUO: Task "+task+" updated.")
 
+        # Update jobs
+        cmd = iutil.execWithRedirect("/usr/bin/redis-cli",
+                                ['-h', 'localhost', '-p', redis_sport ,'keys','Job:*'],
+                                stdout="/mnt/sysimage/tmp/redis_jobs", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath)
+        for job in open('/mnt/sysimage/tmp/redis_jobs','r').readlines() :
+            job = job.strip()
+            jobtype = Popen(["redis-cli", "-h", "localhost", "-p", redis_sport, "hget", job, "type"], stdout=PIPE).communicate()[0].strip()
+            if 'SNAPSHOT' == jobtype:
+                iutil.execWithRedirect("/usr/bin/redis-cli",
+                                    ["-h", "localhost", "-p", redis_sport ,"hset",job,"type","INSTANCE"],
+                                    stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                    root=anaconda.rootPath)
+                log.info("ABIQUO: Job "+job+" updated.")
 
 
 
