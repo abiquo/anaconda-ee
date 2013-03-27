@@ -17,6 +17,7 @@ def abiquo_upgrade_post(anaconda):
 
     redis_port = 6379
     redis_sport = str(redis_port)
+    redis_host = '127.0.0.1'
 
     log.info("ABIQUO: Post install steps")
     # Clean tomcat 
@@ -65,10 +66,10 @@ def abiquo_upgrade_post(anaconda):
         schema.close()
 
 
-    # Redis ABICLOUDPREMIUM-5188
+    # Redis delta
 
     if os.path.exists(schema_path):
-        log.info("ABIQUO: Applying redis patch...")
+        log.info("ABIQUO: Updating redis ...")
         iutil.execWithRedirect("/etc/init.d/redis",
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
@@ -76,12 +77,12 @@ def abiquo_upgrade_post(anaconda):
         # Wait for start
         time.sleep(3)
         iutil.execWithRedirect("/usr/bin/redis-cli",
-                                ['-h', 'localhost', '-p', redis_sport ,"PING"],
+                                ['-h', redis_host, '-p', redis_sport ,"PING"],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath) 
         # Update tasks
         cmd = iutil.execWithRedirect("/usr/bin/redis-cli",
-                                ['-h', 'localhost', '-p', redis_sport ,'keys','Task:*'],
+                                ['-h', redis_host, '-p', redis_sport ,'keys','Task:*'],
                                 stdout="/mnt/sysimage/tmp/redis_tasks", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         for task in open('/mnt/sysimage/tmp/redis_tasks','r').readlines() :
@@ -96,7 +97,7 @@ def abiquo_upgrade_post(anaconda):
 
         # Update jobs
         cmd = iutil.execWithRedirect("/usr/bin/redis-cli",
-                                ['-h', 'localhost', '-p', redis_sport ,'keys','Job:*'],
+                                ['-h', redis_host, '-p', redis_sport ,'keys','Job:*'],
                                 stdout="/mnt/sysimage/tmp/redis_jobs", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         for job in open('/mnt/sysimage/tmp/redis_jobs','r').readlines() :
