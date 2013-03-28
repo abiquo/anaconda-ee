@@ -69,13 +69,14 @@ def abiquo_upgrade_post(anaconda):
     # Redis delta
 
     if os.path.exists(schema_path):
-        log.info("ABIQUO: Updating redis ...")
+        log.info("ABIQUO: Starting redis ...")
         iutil.execWithRedirect("/etc/init.d/redis",
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         # Wait for start
         time.sleep(3)
+        log.info("ABIQUO: Updating redis ...")
         iutil.execWithRedirect("/usr/bin/redis-cli",
                                 ['-h', redis_host, '-p', redis_sport ,"PING"],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
@@ -87,10 +88,10 @@ def abiquo_upgrade_post(anaconda):
                                 root=anaconda.rootPath)
         for task in open('/mnt/sysimage/tmp/redis_tasks','r').readlines() :
             task = task.strip()
-            tasktype = Popen(["redis-cli", "-h", "localhost", "-p", redis_sport, "hget", task, "type"], stdout=PIPE).communicate()[0].strip()
+            tasktype = Popen(["redis-cli", "-h", redis_host, "-p", redis_sport, "hget", task, "type"], stdout=PIPE).communicate()[0].strip()
             if 'SNAPSHOT' == tasktype:
                 iutil.execWithRedirect("/usr/bin/redis-cli",
-                                    ["-h", "localhost", "-p", redis_sport ,"hset",task,"type","INSTANCE"],
+                                    ["-h", redis_host, "-p", redis_sport ,"hset",task,"type","INSTANCE"],
                                     stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                                     root=anaconda.rootPath)
                 log.info("ABIQUO: Task "+task+" updated.")
@@ -102,10 +103,10 @@ def abiquo_upgrade_post(anaconda):
                                 root=anaconda.rootPath)
         for job in open('/mnt/sysimage/tmp/redis_jobs','r').readlines() :
             job = job.strip()
-            jobtype = Popen(["redis-cli", "-h", "localhost", "-p", redis_sport, "hget", job, "type"], stdout=PIPE).communicate()[0].strip()
+            jobtype = Popen(["redis-cli", "-h", redis_host, "-p", redis_sport, "hget", job, "type"], stdout=PIPE).communicate()[0].strip()
             if 'SNAPSHOT' == jobtype:
                 iutil.execWithRedirect("/usr/bin/redis-cli",
-                                    ["-h", "localhost", "-p", redis_sport ,"hset",job,"type","INSTANCE"],
+                                    ["-h", redis_host, "-p", redis_sport ,"hset",job,"type","INSTANCE"],
                                     stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                                     root=anaconda.rootPath)
                 log.info("ABIQUO: Job "+job+" updated.")
