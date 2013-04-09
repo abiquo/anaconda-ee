@@ -4,6 +4,7 @@ import shutil
 import logging
 import ConfigParser
 import time
+import re
 from subprocess import *
 
 log = logging.getLogger("anaconda")
@@ -14,6 +15,8 @@ def abiquo_upgrade_post(anaconda):
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
+    xen_path = anaconda.rootPath + "/etc/xen"
+    xen_kernel = '/xen.gz-3.4.2'
 
     redis_port = 6379
     redis_sport = str(redis_port)
@@ -112,8 +115,18 @@ def abiquo_upgrade_post(anaconda):
                 log.info("ABIQUO: Job "+job+" updated.")
 
 
-
-
+    if os.path.exists(xen_path):
+        # replace default kernel entry 
+        log.info("ABIQUO: Updating XEN grub entry ...")
+        f = open(anaconda.rootPath + '/boot/grub/menu.lst')
+        buf = f.readlines()
+        f.close()
+        fw = open(anaconda.rootPath + '/boot/grub/menu.lst', 'w')
+        for line in buf:
+            fw.write(re.sub('\/xen.gz-2.6.18.*',
+                            xen_kernel,
+                            line))
+        fw.close()
 
 
     # restore fstab
