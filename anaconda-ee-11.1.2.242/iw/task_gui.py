@@ -224,6 +224,7 @@ class TaskWindow(InstallWindow):
         # FIXME  ?
         if (('abiquo-monolithic' in self.anaconda.id.abiquo.selectedGroups) and \
                 ('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups)) or \
+                ('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups)) or \
                 (('abiquo-lvm-storage-server' in self.anaconda.id.abiquo.selectedGroups)) :
                     self.dispatch.skipStep("abiquo_nfs_config", skip = 1)
 
