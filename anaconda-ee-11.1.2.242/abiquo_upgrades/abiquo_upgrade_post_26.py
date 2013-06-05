@@ -11,7 +11,7 @@ log = logging.getLogger("anaconda")
 
 def abiquo_upgrade_post(anaconda):
 
-    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-2.6.0-delta.sql"
+    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
@@ -63,6 +63,9 @@ def abiquo_upgrade_post(anaconda):
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         schema.close()
+
+
+    # Redis https://gist.github.com/enricruiz/baf19132b8112f0b9ec6 here
 
 
     if os.path.exists(xen_path):
