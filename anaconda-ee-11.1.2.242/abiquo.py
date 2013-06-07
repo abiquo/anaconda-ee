@@ -106,5 +106,5 @@ class Abiquo:
         self.abiquo_auth_module = 'abiquo'
         self.abiquo_redis_host =  '127.0.0.1'
         self.abiquo_redis_port = '6379'
-        self.install_type = 'ciab'
+        self.install_type = 'abiquo-monolithic'
 

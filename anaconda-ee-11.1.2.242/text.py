@@ -66,7 +66,6 @@ stepToClasses = {
     #"abiquo": ("abiquo_server_text", "AbiquoServerWindow"),
     "abiquo_rs": ("abiquo_rs_text", "AbiquoRSWindow"),
     "abiquo_v2v": ("abiquo_v2v_text", "AbiquoV2VWindow"),
-    "abiquo_hv": ("abiquo_hv_text", "AbiquoHVWindow"),
     "confirminstall" : ("confirm_text", "BeginInstallWindow"),
     "confirmupgrade" : ("confirm_text", "BeginUpgradeWindow"),
     "install" : ("progress_text", "setupForInstall"),
@@ -646,7 +645,6 @@ class InstallInterface:
     def run(self, anaconda):
         # FIXME
         # NEED TO IMPLEMENT THIS IN TEXT UI
-        anaconda.dispatch.skipStep("abiquo_install_type", 1)
         anaconda.dispatch.skipStep("abiquo_distributed", 1)
         anaconda.dispatch.skipStep("abiquo_password", 1)
         anaconda.dispatch.skipStep("abiquo_nfs_config", 1)

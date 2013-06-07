@@ -8,7 +8,7 @@ import iutil
 import types
 import re
 import shutil
-from abiquo_postinstall_24 import *
+from abiquo_postinstall_26 import *
 
 try:
     import instnum
@@ -26,16 +26,11 @@ class InstallClass(BaseInstallClass):
     _description = N_("""
 <b>Select one (or multiple) %s components to install:</b>""")
 
-#<b>Cloud in a Box:</b> Abiquo + Storage + Hypervisor in one box.
 #<b>Server:</b> Installs Abiquo core, the API, MySQL and the web client.
 #<b>Remote Services:</b> Installs the components required to manage a remote datacenter from Abiquo (V2V is also needed, but can be installed on its own server).
 #<b>V2V Conversion Services:</b> Conversion services required for the Abiquo V2V features. Can be installed standalone (for best performance) or with the Remote Services.
 #<b>Abiquo NFS Repository:</b> Local repository to store the virtual appliances.
 #<b>Abiquo DHCP Relay:</b> DHCP Relay used to scale Abiquo multi-rack installations.
-#
-#<b>Abiquo KVM Cloud Node:</b> Installs a KVM Cloud Node.
-#<b>Abiquo Xen Cloud Node:</b> Installs a Xen Cloud Node.
-#<b>Abiquo VirtualBox Cloud Node:</b> Installs a VirtualBox 4.0 Cloud Node.
 #
 #<b>LVM Storage Server:</b> Abiquo LVM based iSCSI storage server.
 #<b>Remote Repository:</b> Abiquo Remote Repository.
@@ -47,15 +42,11 @@ class InstallClass(BaseInstallClass):
         hidden = 1
 
     tasks =  [
-              (N_("Cloud in a Box"), ["cloud-in-a-box"]),
               (N_("LVM Storage Server"), ["abiquo-lvm-storage-server"]),
               (N_("Abiquo Server"), ["abiquo-server"]),
               (N_("Abiquo V2V Conversion Services"), ["abiquo-v2v"]),
               (N_("Abiquo Remote Services"), ["abiquo-remote-services"]),
               (N_("Abiquo NFS Repository"), ["abiquo-nfs-repository"]),
-              (N_("Abiquo KVM"), ["abiquo-kvm"]),
-              (N_("Abiquo Xen"), ["abiquo-xen"]),
-              (N_("Abiquo VirtualBox"), ["abiquo-virtualbox"]),
               (N_("Abiquo DHCP Relay"), ["abiquo-dhcp-relay"]),
               (N_("Abiquo Remote Repository"), ["abiquo-remote-repository"])
               ]
@@ -78,11 +69,6 @@ class InstallClass(BaseInstallClass):
     def setGroupSelection(self, anaconda):
         grps = anaconda.backend.getDefaultGroups(anaconda)
         map(lambda x: anaconda.backend.selectGroup(x), grps)
-        if anaconda.id.abiquo.install_type == 'ciab':
-            map(anaconda.backend.selectGroup, ['cloud-in-a-box'])
-            anaconda.id.abiquo.selectedGroups = ['cloud-in-a-box']
-        else:
-            map(anaconda.backend.deselectGroup, ['cloud-in-a-box'])
 
     def setSteps(self, dispatch):
 	BaseInstallClass.setSteps(self, dispatch);

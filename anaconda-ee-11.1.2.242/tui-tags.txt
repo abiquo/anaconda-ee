@@ -55,6 +55,3 @@ text/firewall_text.py
 
 textw/abiquo_rs_text.py
 	AbiquoRSWindow		"abiquo_rs"
-
-textw/abiquo_hv_text.py
-	AbiquoHVWindow		"abiquo_hv"

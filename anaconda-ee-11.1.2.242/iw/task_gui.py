@@ -30,9 +30,6 @@ DESC_ABI_PLATFORM = """
 
 The installation types and main components are as follows:
 
-<u>Cloud in a Box</u>
-For an evaluation system. Includes: Abiquo Server, Remote Services, KVM Hypervisor, LVM Storage Server
-
 <u>Monolithic</u>
 For small installations. Includes: Abiquo Server, Remote Services, V2V Services
 
@@ -89,7 +86,6 @@ class AbiquoAdditionalTasks(gtk.TreeView):
 # Platform Task
 # List of Abiquo Groups
 # Abiquo Platform
-# Abiquo Hypervisors
 # Abiquo Storage Servers
 # Abiquo Additional Components
 #
@@ -114,13 +110,10 @@ class AbiquoPlatformTasks(gtk.TreeView):
 
         # Check if no abiquo groups have been selected
         sel = True
-        for g in ['abiquo-server', 'abiquo-remote-services', 'abiquo-v2v', 'cloud-in-a-box', 'abiquo-monolithic']:
+        for g in ['abiquo-server', 'abiquo-remote-services', 'abiquo-v2v', 'abiquo-monolithic']:
             if g in self.anaconda.id.abiquo.selectedGroups:
                 sel = False
         self.store.append([sel, "None", 'none'])
-
-        # check if cloud-in-a-box previously selected
-        self.store.append([('cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups), "Cloud in a Box Install", 'cloud-in-a-box'])
 
         # check if monolithic previously selected
         self.store.append([('abiquo-monolithic' in self.anaconda.id.abiquo.selectedGroups), "Monolithic Install", 'abiquo-monolithic'])
@@ -153,41 +146,6 @@ class AbiquoPlatformTasks(gtk.TreeView):
                         self.anaconda.id.abiquo.selectedGroups.remove(row[2])
 
 
-class AbiquoHypervisorTasks(AbiquoPlatformTasks):
-
-    def __init__(self, anaconda):
-        AbiquoPlatformTasks.__init__(self, anaconda)
-    
-    def _setupStore(self):
-        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        
-        sel = True
-        for g in ['abiquo-kvm', 'abiquo-xen', 'abiquo-virtualbox']:
-            if g in self.anaconda.id.abiquo.selectedGroups:
-                sel = False
-        self.store.append([sel, "None", 'none'])
-        self.store.append([('abiquo-kvm' in self.anaconda.id.abiquo.selectedGroups), "KVM Cloud Node", 'abiquo-kvm'])
-        self.store.append([('abiquo-xen' in self.anaconda.id.abiquo.selectedGroups), "Xen Cloud Node", 'abiquo-xen'])
-        self.store.append([('abiquo-virtualbox' in self.anaconda.id.abiquo.selectedGroups), "VirtualBox Cloud Node", 'abiquo-virtualbox'])
-        self.set_model(self.store)
-
-class OpscodeTasks(AbiquoPlatformTasks):
-
-    def __init__(self, anaconda):
-        AbiquoPlatformTasks.__init__(self, anaconda)
-    
-    def _setupStore(self):
-        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        
-        sel = True
-        for g in ['opschef-server', 'opschef-client']:
-            if g in self.anaconda.id.abiquo.selectedGroups:
-                sel = False
-        self.store.append([sel, "None", 'none'])
-        self.store.append([('opschef-server' in self.anaconda.id.abiquo.selectedGroups), "Opscode Chef Server", 'opschef-server'])
-        self.store.append([('opschef-client' in self.anaconda.id.abiquo.selectedGroups), "Opscode Chef Client", 'opschef-client'])
-        self.set_model(self.store)
-
 class AbiquoStorageTasks(AbiquoPlatformTasks):
 
     def __init__(self, anaconda):
@@ -205,7 +163,6 @@ class TaskWindow(InstallWindow):
         log.info('Finished group selection: %s' % self.anaconda.id.abiquo.selectedGroups)
         
         self.dispatch.skipStep("abiquo_password", skip = 1)
-        #self.dispatch.skipStep("abiquo_nfs_config", skip = 1)
 
         for g in self.abiquo_groups:
             if g in self.anaconda.id.abiquo.selectedGroups:
@@ -224,8 +181,8 @@ class TaskWindow(InstallWindow):
         # FIXME  ?
         if (('abiquo-monolithic' in self.anaconda.id.abiquo.selectedGroups) and \
                 ('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups)) or \
-                ('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups)) or \
-                (('abiquo-lvm-storage-server' in self.anaconda.id.abiquo.selectedGroups)) :
+                ('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups) or \
+                ('abiquo-lvm-storage-server' in self.anaconda.id.abiquo.selectedGroups) :
                     self.dispatch.skipStep("abiquo_nfs_config", skip = 1)
 
         if 'abiquo-distributed' not in self.anaconda.id.abiquo.selectedGroups:
@@ -237,16 +194,6 @@ class TaskWindow(InstallWindow):
         else:
             self.dispatch.skipStep("abiquo_distributed", skip = 0)
 
-
-        if (('abiquo-xen' in self.anaconda.id.abiquo.selectedGroups)) or \
-           (('abiquo-kvm' in self.anaconda.id.abiquo.selectedGroups)) or \
-           (('abiquo-virtualbox' in self.anaconda.id.abiquo.selectedGroups)):
-            log.info("abiquo-kvm or abiquo-xen selected, show step.")
-            self.dispatch.skipStep("abiquo_hv", skip = 0)
-            self.dispatch.skipStep("abiquo_nfs_config", skip = 1, permanent = 1)
-        else:
-            log.info("abiquo-kvm/abiquo-xen/abiquo-virtualbox not selected, skip.")
-            self.dispatch.skipStep("abiquo_hv", skip = 1)
 
         if 'abiquo-remote-repository' in self.anaconda.id.abiquo.selectedGroups:
             if 'abiquo-distributed' in self.anaconda.id.abiquo.selectedGroups:
@@ -282,12 +229,6 @@ class TaskWindow(InstallWindow):
         if selection == "Abiquo Platform":
             w.add(self.abiquo_platform_tasks)
             self.abiquo_platform_tasks.show()
-        elif selection == "Cloud Nodes":
-            w.add(self.abiquo_hypervisor_tasks)
-            self.abiquo_hypervisor_tasks.show()
-        #elif selection == "Opscode Chef":
-        #    w.add(self.opscode_tasks)
-        #    self.opscode_tasks.show()
         elif selection == "Storage Servers":
             w.add(self.abiquo_storage_tasks)
             self.abiquo_storage_tasks.show()
@@ -319,11 +260,10 @@ class TaskWindow(InstallWindow):
         self.dispatch = anaconda.dispatch
         self.backend = anaconda.backend
         self.anaconda = anaconda
-        self.abiquo_groups = ['cloud-in-a-box', 'abiquo-monolithic',
+        self.abiquo_groups = ['abiquo-monolithic',
                   'abiquo-server', 'abiquo-remote-services', 'abiquo-v2v',
                   'abiquo-lvm-storage-server',
                   'opschef-server','opschef-client',
-                  'abiquo-kvm', 'abiquo-xen', 'abiquo-virtualbox',
                   'abiquo-dhcp-relay', 'abiquo-nfs-repository',
                   'abiquo-remote-repository'
                   ]
@@ -337,10 +277,8 @@ class TaskWindow(InstallWindow):
         lbl = self.xml.get_widget("mainLabel")
 
         #self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Servers", "Opscode Chef", "Additional Components"]
-        self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Servers", "Additional Components"]
+        self.installer_tasks = ["Abiquo Platform", "Storage Servers", "Additional Components"]
         self.tasks_descriptions = {
-            "Cloud Nodes": "<b>Cloud Nodes</b>\nInstall Abiquo KVM, Xen or VirtualBox Cloud Nodes (OpenSource hypervisors tested and supported by Abiquo).",
-            "Opscode Chef": "<b>Chef</b>\nInstall Chef Server/Client components",
             "Abiquo Platform": DESC_ABI_PLATFORM,
             "Storage Servers": "<b>Storage Servers</b>\nInstall required servers to manage external storage.",
             "Additional Components": "<b>Additional Components</b>\nNFS Repository, etc.",
@@ -348,8 +286,6 @@ class TaskWindow(InstallWindow):
 
         self._createTaskStore()
         self.abiquo_platform_tasks = AbiquoPlatformTasks(anaconda)
-        self.abiquo_hypervisor_tasks = AbiquoHypervisorTasks(anaconda)
-        #self.opscode_tasks = OpscodeTasks(anaconda)
         self.abiquo_storage_tasks = AbiquoStorageTasks(anaconda)
         self.abiquo_additional_tasks = AbiquoAdditionalTasks(anaconda)
         w = self.xml.get_widget("subtaskSW")

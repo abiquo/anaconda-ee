@@ -175,12 +175,10 @@ class InstallData:
         self.users = users.Users()
 
         if self.anaconda.backend.isGroupSelected('abiquo-server') or \
-                self.anaconda.backend.isGroupSelected('cloud-in-a-box') or \
                 self.anaconda.backend.isGroupSelected('abiquo-monolithic'):
                     log.info("Writing abiquo settings")
                     self.abiquo.write(self.anaconda.rootPath)
         if self.anaconda.backend.isGroupSelected('abiquo-remote-services') or \
-                self.anaconda.backend.isGroupSelected('cloud-in-a-box') or \
                 self.anaconda.backend.isGroupSelected('abiquo-monolithic'):
                     log.info("Writing abiquo_rs settings")
                     self.abiquo_rs.write(self.anaconda.rootPath)

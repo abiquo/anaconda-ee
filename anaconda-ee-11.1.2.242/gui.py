@@ -71,7 +71,6 @@ stepToClass = {
     "network" : ("network_gui", "NetworkWindow"),
     "timezone" : ("timezone_gui", "TimezoneWindow"),
     "accounts" : ("account_gui", "AccountWindow"),
-    "abiquo_install_type": ("abiquo_install_type_gui", "AbiquoInstallTypeWindow"),    
     "tasksel": ("task_gui", "TaskWindow"),    
     "group-selection": ("package_gui", "GroupSelectionWindow"),
     "confirminstall" : ("confirm_gui", "InstallConfirmWindow"),
@@ -83,7 +82,6 @@ stepToClass = {
     "abiquo_nfs_config" : ("abiquo_nfs_config_gui", "AbiquoNFSConfigWindow"),
     "abiquo_rs": ("abiquo_rs_gui", "AbiquoRSWindow"),    
     "abiquo_v2v": ("abiquo_v2v_gui", "AbiquoV2VWindow"),    
-    "abiquo_hv": ("abiquo_hv_gui", "AbiquoHVWindow"),    
     "abiquo_dhcp_relay": ("abiquo_dhcp_relay_gui", "AbiquoDHCPRelayWindow"),    
     "complete" : ("congrats_gui", "CongratulationWindow"),
 }

@@ -15,8 +15,6 @@ def abiquo_upgrade_post(anaconda):
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
-    xen_path = anaconda.rootPath + "/etc/xen"
-    xen_kernel = '/xen.gz-3.4.2'
 
     log.info("ABIQUO: Post install steps")
     # Clean tomcat 
@@ -49,18 +47,18 @@ def abiquo_upgrade_post(anaconda):
         # log debug
         iutil.execWithRedirect("/sbin/ifconfig",
                                 ['lo', 'up'],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         iutil.execWithRedirect("/etc/init.d/mysql",
                                 ['start'],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         time.sleep(6)
         schema = open(schema_path)
         iutil.execWithRedirect("/usr/bin/mysql",
                                 ['kinton'],
                                 stdin=schema,
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         schema.close()
 
@@ -68,22 +66,8 @@ def abiquo_upgrade_post(anaconda):
     # Redis https://gist.github.com/enricruiz/baf19132b8112f0b9ec6 here
 
 
-    if os.path.exists(xen_path):
-        # replace default kernel entry 
-        log.info("ABIQUO: Updating XEN grub entry ...")
-        f = open(anaconda.rootPath + '/boot/grub/menu.lst')
-        buf = f.readlines()
-        f.close()
-        fw = open(anaconda.rootPath + '/boot/grub/menu.lst', 'w')
-        for line in buf:
-            fw.write(re.sub('\/xen.gz-2.6.18.*',
-                            xen_kernel,
-                            line))
-        fw.close()
-
-
     # restore fstab
     backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.4.0'
     if os.path.exists('%s/fstab.anaconda' % backup_dir):
-        shutil.copyfile("%s/fstab.anaconda" % backup_dir,
-                '%s/etc/fstab' % anaconda.rootPath)
+        shutil.copyfile('%s/fstab.anaconda' % backup_dir,'%s/etc/fstab' % anaconda.rootPath)
+

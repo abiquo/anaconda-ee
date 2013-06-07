@@ -85,27 +85,15 @@ class TaskWindow:
                 map(self.backend.deselectGroup, grps)
         
         anaconda.id.abiquo.selectedGroups = selected_groups
-        if (not ('abiquo-server' in selected_groups)) and \
-           (not ('cloud-in-a-box' in selected_groups)):
+        if (not ('abiquo-server' in selected_groups)) 
             anaconda.dispatch.skipStep("abiquo", skip = 1)
         else:
             anaconda.dispatch.skipStep("abiquo", skip = 0)
         
-        if (not ('abiquo-remote-services' in selected_groups)) and \
-           (not ('cloud-in-a-box' in selected_groups)):
+        if (not ('abiquo-remote-services' in selected_groups))
             anaconda.dispatch.skipStep("abiquo_rs", skip = 1)
         else:
             anaconda.dispatch.skipStep("abiquo_rs", skip = 0)
-
-        if (not ('abiquo-xen' in selected_groups)) and \
-           (not ('abiquo-kvm' in selected_groups)):
-            self.dispatch.skipStep("abiquo_hv", skip = 1)
-        else:
-            self.dispatch.skipStep("abiquo_hv", skip = 0)
-
-        if 'cloud-in-a-box' in selected_groups:
-            self.dispatch.skipStep('abiquo_rs', skip = 1)
-            self.dispatch.skipStep('abiquo_hv', skip = 1)
 
 	screen.popWindow()
 				 
