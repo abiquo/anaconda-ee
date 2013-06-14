@@ -12,6 +12,7 @@ log = logging.getLogger("anaconda")
 def abiquo_upgrade_post(anaconda):
 
     schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
+    api_path = anaconda.rootPath + "/opt/abiquo/tomcat/webapps/api"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
@@ -42,7 +43,7 @@ def abiquo_upgrade_post(anaconda):
                 print e
 
     # Upgrade database if this is a server install and MariaDB exists
-    if os.path.exists(schema_path) and os.path.exists(mysql_path):
+    if os.path.exists(api_path):
         log.info("ABIQUO: Updating Abiquo database...")
         # log debug
         iutil.execWithRedirect("/sbin/ifconfig",
@@ -63,8 +64,19 @@ def abiquo_upgrade_post(anaconda):
         schema.close()
 
 
-    # Redis https://gist.github.com/enricruiz/baf19132b8112f0b9ec6 here
+    # Redis delta
 
+    if os.path.exists(api_path):
+        log.info("ABIQUO: Starting redis ...")
+        iutil.execWithRedirect("/etc/init.d/redis",
+                                ['start'],
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath)
+        # Wait for start
+        time.sleep(3)
+        log.info("ABIQUO: Running redis delta script...")
+        # FIXME Not ready
+        # execfile('redis_delta_26.py')
 
     # restore fstab
     backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.4.0'
