@@ -1,5 +1,6 @@
 from subprocess import *
 import urlparse
+import re
 
 HOST = "localhost"
 PORT = 6379
@@ -15,22 +16,20 @@ if ret:
 # Retrieve all monitors
 cmd = Popen("redis-cli -h %s -p %d smembers PhysicalMachine:all" % (HOST, PORT), shell=True, stdout=PIPE)
  
-for pm in cmd.stdout:
-    print("PM: %s" % pm)
+for pm in cmd.stdout:   
     key = "PhysicalMachine:%s" % (pm.strip())
 
     # Get address and monitor type
-    address = Popen(["redis-cli", "--raw", "-h", HOST, "-p", SPORT, "hget", key, "address"], stdout=PIPE).communicate()[0].strip()
-    monitorType = Popen(["redis-cli", "--raw", "-h", HOST, "-p", SPORT, "hget", key, "type"], stdout=PIPE).communicate()[0].strip()
-
-    # Delete unused fields
-    call(["redis-cli", "-h", HOST, "-p", SPORT, "hdel", key, "address"], stdout=PIPE)
+    address = Popen(["redis-cli", "-h", HOST, "-p", SPORT, "hget", key, "address"], stdout=PIPE).communicate()[0].strip()
+    monitorType = Popen(["redis-cli", "-h", HOST, "-p", SPORT, "hget", key, "type"], stdout=PIPE).communicate()[0].strip()
 
     # Insert new fields
-    url = urlparse.urlparse(address)
+    m = re.search('([0-9]+(?:\.[0-9]+){3}):([0-9]+)', address)
+    if m is None:
+        continue;
 
-    ip = url.hostname
-    port = str(url.port)
+    ip = m.group(1)
+    port = str(m.group(2))
     agentPort = ""
 
     if (monitorType == "KVM") or (monitorType == "XEN"):
@@ -49,3 +48,6 @@ for pm in cmd.stdout:
     new_index_key = "PhysicalMachine:address:%s" % (ip)
     call(["redis-cli", "-h", HOST, "-p", SPORT, "sunionstore", new_index_key, old_index_key], stdout=PIPE)
     call(["redis-cli", "-h", HOST, "-p", SPORT, "del", old_index_key], stdout=PIPE)
+    
+    # Delete unused fields
+    call(["redis-cli", "-h", HOST, "-p", SPORT, "hdel", key, "address"], stdout=PIPE)
