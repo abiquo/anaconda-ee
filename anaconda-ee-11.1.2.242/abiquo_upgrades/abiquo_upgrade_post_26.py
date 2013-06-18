@@ -12,6 +12,7 @@ log = logging.getLogger("anaconda")
 def abiquo_upgrade_post(anaconda):
 
     schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
+    redis_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/redis-delta-2.4.0_to_2.6.0.py"
     api_path = anaconda.rootPath + "/opt/abiquo/tomcat/webapps/api"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
@@ -74,9 +75,12 @@ def abiquo_upgrade_post(anaconda):
                                 root=anaconda.rootPath)
         # Wait for start
         time.sleep(3)
-        log.info("ABIQUO: Running redis delta script...")
-        # FIXME Not ready
-        # execfile('redis_delta_26.py')
+        log.info("ABIQUO: Updating redis ...")
+        iutil.execWithRedirect("/usr/bin/python",
+                                [redis_path],
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath)
+
 
     # restore fstab
     backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.4.0'

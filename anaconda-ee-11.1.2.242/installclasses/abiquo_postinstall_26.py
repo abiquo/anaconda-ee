@@ -11,7 +11,7 @@ log = logging.getLogger("anaconda")
 def abiquoPostInstall(anaconda):
     log.info("Abiquo 2.6 postinstall")
 
-    if os.path.exists(anaconda.rootPath + '/opt/abiquo/tomcat/webapps/client-premium'):
+    if os.path.exists(anaconda.rootPath + '/opt/abiquo/tomcat/webapps/api'):
 	# Write motd init script
 	f = open(anaconda.rootPath + "/etc/rc.d/init.d/motd", "w")
 	f.write("""
@@ -229,5 +229,10 @@ exit 0
     f.write('Installed Profiles: %s\n' %
             str(anaconda.id.abiquo.selectedGroups))
     f.close()
+
+    # Decrease loglevel to avoid kernel warnings
+    rc = open(anaconda.rootPath + '/etc/rc.local', 'a')
+    rc.write('echo 3 > /proc/sys/kernel/printk\n')
+    rc.close()
 
 
