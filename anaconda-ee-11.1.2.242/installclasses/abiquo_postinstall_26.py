@@ -230,7 +230,7 @@ exit 0
             str(anaconda.id.abiquo.selectedGroups))
     f.close()
 
-    # Decrease loglevel to avoid kernel warnings
+    # Tweak loglevel to avoid kernel warnings
     rc = open(anaconda.rootPath + '/etc/rc.local', 'a')
     rc.write('echo 3 > /proc/sys/kernel/printk\n')
     rc.close()

@@ -12,11 +12,11 @@ log = logging.getLogger("anaconda")
 def abiquo_upgrade_post(anaconda):
 
     schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
-    redis_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/redis-delta-2.4.0_to_2.6.0.py"
     api_path = anaconda.rootPath + "/opt/abiquo/tomcat/webapps/api"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
+    redis_path = "/usr/share/doc/abiquo-server/database/redis-delta-2.4.0_to_2.6.0.py"
 
     log.info("ABIQUO: Post install steps")
     # Clean tomcat 
@@ -86,4 +86,10 @@ def abiquo_upgrade_post(anaconda):
     backup_dir = anaconda.rootPath + '/opt/abiquo/backup/2.4.0'
     if os.path.exists('%s/fstab.anaconda' % backup_dir):
         shutil.copyfile('%s/fstab.anaconda' % backup_dir,'%s/etc/fstab' % anaconda.rootPath)
+
+
+    # Tweak loglevel to avoid kernel warnings
+    rc = open(anaconda.rootPath + '/etc/rc.local', 'a')
+    rc.write('echo 3 > /proc/sys/kernel/printk\n')
+    rc.close()
 
