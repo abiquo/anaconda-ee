@@ -51,17 +51,25 @@ def abiquo_upgrade_post(anaconda):
                                 ['lo', 'up'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
+        log.info("ABIQUO: Starting mysql service...")
         iutil.execWithRedirect("/etc/init.d/mysql",
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
-        time.sleep(6)
+        # Wait for service to start...
+        time.sleep(5)
+        log.info("ABIQUO: Checking mysql integrity...")
+        iutil.execWithRedirect("/usr/bin/mysqlcheck",
+                                ['mysql'],
+                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                                root=anaconda.rootPath)
         schema = open(schema_path)
         iutil.execWithRedirect("/usr/bin/mysql",
                                 ['kinton'],
                                 stdin=schema,
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
+        log.info("ABIQUO: Waiting for delta to be applied...")
         schema.close()
 
 
@@ -73,7 +81,7 @@ def abiquo_upgrade_post(anaconda):
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
-        # Wait for start
+        # Wait for to start...
         time.sleep(3)
         log.info("ABIQUO: Updating redis ...")
         iutil.execWithRedirect("/usr/bin/python",
