@@ -3,6 +3,7 @@ import iutil
 import types
 import re
 import shutil
+import fileinput
 import logging
 import glob
 import stat
@@ -115,8 +116,21 @@ exit 0
         f = open(anaconda.rootPath + "/opt/abiquo/config/abiquo.properties", "a")
         f.write("abiquo.appliancemanager.checkMountedRepository = false\n")
         f.close()
- 
 
+	# Get first device
+        devices = anaconda.id.network.netdevices
+        firstdev = anaconda.id.network.getFirstDeviceName()
+        if devices.has_key(firstdev):
+            dev = devices[firstdev]
+            ipaddr = dev.get('ipaddr')
+            
+        if ipaddr:
+            log.info("Abiquo: Configured IP %s for device %s", dev.get('ipaddr'), dev.get('device'))
+            f = fileinput.FileInput(anaconda.rootPath + "/opt/abiquo/config/abiquo.properties", inplace=1)
+            for line in f:
+                line = line.replace('127.0.0.1:/',ipaddr+':/')
+                print line.rstrip()
+            f.close()
     
     if anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
         iutil.execWithRedirect("/sbin/chkconfig",
