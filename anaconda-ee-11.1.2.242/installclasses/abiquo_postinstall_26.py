@@ -13,12 +13,12 @@ def abiquoPostInstall(anaconda):
     log.info("Abiquo 2.6 postinstall")
 
     if os.path.exists(anaconda.rootPath + '/opt/abiquo/tomcat/webapps/api'):
-	# Write motd init script
-	f = open(anaconda.rootPath + "/etc/rc.d/init.d/motd", "w")
-	f.write("""
+        # Write motd init script
+        f = open(anaconda.rootPath + "/etc/rc.d/init.d/motd", "w")
+        f.write("""
 #!/bin/sh
 #
-# motd	Prepares /etc/motd file
+# motd  Prepares /etc/motd file
 #
 # chkconfig: 2345 99 05
 # description: Prepares /etc/motd file
@@ -41,23 +41,23 @@ cat /etc/abiquo-release >> /etc/motd
 echo -e "\nThe Abiquo server is now running. You can login from a Web browser at:" >> /etc/motd
 
 for ip in $IP_ADDRESS; do
-	echo -e "http://$ip" >> /etc/motd
+    echo -e "http://$ip" >> /etc/motd
 done
 echo >> /etc/motd
 
 exit 0
 """)
-	f.close()
+    f.close()
         # Enable MOTD
-	iutil.execWithRedirect("/bin/chmod",
+    iutil.execWithRedirect("/bin/chmod",
                                 ['a+x', "/etc/rc.d/init.d/motd"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
-	iutil.execWithRedirect("/sbin/chkconfig",
+    iutil.execWithRedirect("/sbin/chkconfig",
                                 ['--add', "motd"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
-	iutil.execWithRedirect("/sbin/chkconfig",
+    iutil.execWithRedirect("/sbin/chkconfig",
                                 ['motd', "on"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
@@ -110,6 +110,7 @@ exit 0
         f.write("/opt/vm_repository    *(rw,no_root_squash,subtree_check,insecure)\n")
         f.close()
 
+
     # Avoid NFS check against /etc/mtab
     if anaconda.backend.isGroupSelected('abiquo-nfs-repository') and \
             anaconda.backend.isGroupSelected('abiquo-monolithic'):
@@ -117,7 +118,8 @@ exit 0
         f.write("abiquo.appliancemanager.checkMountedRepository = false\n")
         f.close()
 
-	# Get first device
+
+    # Get first device
         devices = anaconda.id.network.netdevices
         firstdev = anaconda.id.network.getFirstDeviceName()
         if devices.has_key(firstdev):
@@ -153,44 +155,43 @@ exit 0
                                 root=anaconda.rootPath)
 
     if anaconda.backend.isGroupSelected('abiquo-server') or \
-            anaconda.backend.isGroupSelected('abiquo-monolithic'):
-                iutil.execWithRedirect("/sbin/chkconfig",
-                                        ['rabbitmq-server', "on"],
-                                        stdout="/dev/tty5", stderr="/dev/tty5",
-                                        root=anaconda.rootPath)
-                # start MySQL to create the schema (Maria Style)
-                iutil.execWithRedirect("/etc/init.d/mysql",
-                                        ['start'],
-                                        stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
-                                        root=anaconda.rootPath)
+        anaconda.backend.isGroupSelected('abiquo-monolithic'):
+            iutil.execWithRedirect("/sbin/chkconfig",
+                                    ['rabbitmq-server', "on"],
+                                    stdout="/dev/tty5", stderr="/dev/tty5",
+                                    root=anaconda.rootPath)
+            # start MySQL to create the schema (Maria Style)
+            iutil.execWithRedirect("/etc/init.d/mysql",
+                                    ['start'],
+                                    stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                    root=anaconda.rootPath)
+            iutil.execWithRedirect("/sbin/chkconfig",
+                                    ['mysql', "on"],
+                                    stdout="/dev/tty5", stderr="/dev/tty5",
+                                    root=anaconda.rootPath)
+            schema = open(anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-schema.sql")
+            # replace default password
+            newschema = open(anaconda.rootPath + "/tmp/kinton-schema.sql", 'w')
+            for line in schema.readlines():
+                newschema.write(re.sub('c69a39bd64ffb77ea7ee3369dce742f3', anaconda.id.abiquoPasswordHex, line))
+                newschema.write("\n")   
+            newschema.close()
 
-                iutil.execWithRedirect("/sbin/chkconfig",
-                                        ['mysql', "on"],
-                                        stdout="/dev/tty5", stderr="/dev/tty5",
-                                        root=anaconda.rootPath)
-                schema = open(anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-schema.sql")
-		# replace default password
-		newschema = open(anaconda.rootPath + "/tmp/kinton-schema.sql", 'w')
-		for line in schema.readlines():
-			newschema.write(re.sub('c69a39bd64ffb77ea7ee3369dce742f3', anaconda.id.abiquoPasswordHex, line))
-			newschema.write("\n")	
-		newschema.close()
+            # create the schema
+            newschema = open(anaconda.rootPath + "/tmp/kinton-schema.sql")
+            iutil.execWithRedirect("/usr/bin/mysql",
+                                    [],
+                                    stdin=newschema,
+                                    stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
+                                    root=anaconda.rootPath)
+            schema.close()
+            newschema.close()
 
-                # create the schema
-		newschema = open(anaconda.rootPath + "/tmp/kinton-schema.sql")
-                iutil.execWithRedirect("/usr/bin/mysql",
-                                        [],
-                                        stdin=newschema,
-                                        stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
-                                        root=anaconda.rootPath)
-                schema.close()
-		newschema.close()
-
-                # setup db credentials
-                iutil.execWithRedirect("/usr/bin/abicli",
-                                        ['set', 'database-password', ''],
-                                        stdout="/dev/tty5", stderr="/dev/tty5",
-                                        root=anaconda.rootPath)
+            if (anaconda.id.abiquoPassword != 'xabiquo'):
+                f = open(anaconda.rootPath + "/opt/abiquo/config/abiquo.properties", "a")
+                f.write("abiquo.m.identity = admin\n")
+                f.write("abiquo.m.credential= %s\n" % (anaconda.id.abiquoPassword))
+                f.close()
 
     # Tweak security limits.conf file
     slimits = open(anaconda.rootPath + "/etc/security/limits.conf", 'a')

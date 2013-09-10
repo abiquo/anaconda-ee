@@ -11,12 +11,13 @@ log = logging.getLogger("anaconda")
 
 def abiquo_upgrade_post(anaconda):
 
-    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
+    db_delta_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
     api_path = anaconda.rootPath + "/opt/abiquo/tomcat/webapps/api"
+    rs_path = anaconda.rootPath + "/usr/share/doc/abiquo-remote-services/"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
-    redis_path = "/usr/share/doc/abiquo-server/database/redis-delta-2.4.0_to_2.6.0.py"
+    redis_delta_path = "/usr/share/doc/abiquo-remote-services/redis-delta-2.4.0_to_2.6.0.py"
 
     log.info("ABIQUO: Post install steps")
     # Clean tomcat 
@@ -56,26 +57,27 @@ def abiquo_upgrade_post(anaconda):
                                 ['start'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
-        # Wait for service to start...
-        time.sleep(5)
+        log.info("ABIQUO: Waiting for mysql to start...")
+        time.sleep(15)
         log.info("ABIQUO: Checking mysql integrity...")
         iutil.execWithRedirect("/usr/bin/mysqlcheck",
                                 ['mysql'],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
-        schema = open(schema_path)
+        time.sleep(5)
+        delta = open(db_delta_path)
         iutil.execWithRedirect("/usr/bin/mysql",
                                 ['kinton'],
-                                stdin=schema,
+                                stdin=delta,
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         log.info("ABIQUO: Waiting for delta to be applied...")
-        schema.close()
+        delta.close()
 
 
     # Redis delta
 
-    if os.path.exists(api_path):
+    if os.path.exists(rs_path):
         log.info("ABIQUO: Starting redis ...")
         iutil.execWithRedirect("/etc/init.d/redis",
                                 ['start'],
@@ -85,7 +87,7 @@ def abiquo_upgrade_post(anaconda):
         time.sleep(3)
         log.info("ABIQUO: Updating redis ...")
         iutil.execWithRedirect("/usr/bin/python",
-                                [redis_path],
+                                [redis_delta_path],
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
 
