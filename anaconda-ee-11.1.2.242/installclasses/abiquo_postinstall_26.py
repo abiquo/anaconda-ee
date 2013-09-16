@@ -47,7 +47,7 @@ echo >> /etc/motd
 
 exit 0
 """)
-    f.close()
+        f.close()
         # Enable MOTD
     iutil.execWithRedirect("/bin/chmod",
                                 ['a+x', "/etc/rc.d/init.d/motd"],
