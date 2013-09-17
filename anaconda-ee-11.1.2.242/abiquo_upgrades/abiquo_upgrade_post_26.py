@@ -13,7 +13,7 @@ def abiquo_upgrade_post(anaconda):
 
     db_delta_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-2.4.0_to_2.6.0.sql"
     api_path = anaconda.rootPath + "/opt/abiquo/tomcat/webapps/api"
-    rs_path = anaconda.rootPath + "/usr/share/doc/abiquo-remote-services/"
+    rs_path = anaconda.rootPath + "/usr/share/doc/abiquo-remote-services"
     work_path = anaconda.rootPath + "/opt/abiquo/tomcat/work"
     temp_path = anaconda.rootPath + "/opt/abiquo/tomcat/temp"
     mysql_path = anaconda.rootPath + "/etc/init.d/mysql"
@@ -44,14 +44,15 @@ def abiquo_upgrade_post(anaconda):
             except Exception, e:
                 print e
 
+    iutil.execWithRedirect("/sbin/ifconfig",
+                            ['lo', 'up'],
+                            stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
+                            root=anaconda.rootPath)
+
     # Upgrade database if this is a server install and MariaDB exists
     if os.path.exists(api_path):
         log.info("ABIQUO: Updating Abiquo database...")
         # log debug
-        iutil.execWithRedirect("/sbin/ifconfig",
-                                ['lo', 'up'],
-                                stdout="/mnt/sysimage/var/log/abiquo-postinst.log",stderr="/mnt/sysimage/var/log/abiquo-postinst.log",
-                                root=anaconda.rootPath)
         log.info("ABIQUO: Starting mysql service...")
         iutil.execWithRedirect("/etc/init.d/mysql",
                                 ['start'],
